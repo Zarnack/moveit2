@@ -325,10 +325,14 @@ void ServoNode::servoLoop()
   std::optional<KinematicState> next_joint_state = std::nullopt;
   rclcpp::WallRate servo_frequency(1 / servo_params_.publish_period);
 
-  // wait for first robot joint state update
   const auto servo_node_start = node_->now();
-  while (planning_scene_monitor_->getLastUpdateTime().get_clock_type() != node_->get_clock()->get_clock_type() ||
-         servo_node_start > planning_scene_monitor_->getLastUpdateTime())
+
+  while (servo_node_start >
+         convertClockType(planning_scene_monitor_->getLastUpdateTime(), servo_node_start.get_clock_type()))
+  {
+    RCLCPP_INFO(node_->get_logger(), "Waiting for planning scene monitor to receive robot state update.");
+    rclcpp::sleep_for(std::chrono::seconds(1));
+  }
   {
     RCLCPP_INFO(node_->get_logger(), "Waiting to receive robot state update.");
     rclcpp::sleep_for(std::chrono::seconds(1));

@@ -103,8 +103,16 @@ private:
   std::optional<KinematicState> processTwistCommand(const moveit::core::RobotStatePtr& robot_state);
   std::optional<KinematicState> processPoseCommand(const moveit::core::RobotStatePtr& robot_state);
 
-  // Variables
+  rclcpp::Time convertClockType(const rclcpp::Time& time, rcl_clock_type_t new_clock_type)
+  {
+    if (time.get_clock_type() != new_clock_type)
+    {
+      return rclcpp::Time(time.nanoseconds(), new_clock_type);
+    }
+    return time;
+  }
 
+  // Variables
   const rclcpp::Node::SharedPtr node_;
   std::unique_ptr<Servo> servo_;
   servo::Params servo_params_;
